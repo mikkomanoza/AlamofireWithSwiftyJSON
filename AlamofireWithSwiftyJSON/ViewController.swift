@@ -7,19 +7,71 @@
 //
 
 import UIKit
+import Alamofire
+import SwiftyJSON
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    
+    @IBOutlet weak var tableView: UITableView!
+    
+    var dictArray = [[String:AnyObject]]()
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+       
+        
+        
+        Alamofire.request(.GET, "http://api.androidhive.info/contacts/").responseJSON { (responseData) -> Void in
+            
+            
+            if((responseData.result.value) != nil) {
+                let swiftyJsonVar = JSON(responseData.result.value!)
+                
+                if let resData = swiftyJsonVar["contacts"].arrayObject {
+                    self.dictArray = resData as! [[String:AnyObject]]
+                    
+                }
+                
+                if self.dictArray.count > 0 {
+                    self.tableView.reloadData()
+                }
+                
+            }
+        
+        }
+    
+        tableView.dataSource = self
+        tableView.delegate = self
+    
+    }
+        
+   
+        
+
+   
+    
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
+        let cell: UITableViewCell = tableView.dequeueReusableCellWithIdentifier("customCell")!
+        
+        var dict = dictArray[indexPath.row]
+        
+        cell.textLabel?.text = dict["name"] as? String
+        cell.detailTextLabel?.text = dict["email"] as? String
+        
+        return cell
+    }
+    
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        
+        return 1
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        return dictArray.count
     }
-
 
 }
 
